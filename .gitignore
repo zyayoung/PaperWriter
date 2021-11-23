@@ -1,0 +1,39 @@
+# Python
+*.pyc
+__pycache__/
+*.egg-info*
+dist/
+env/
+venv/
+venv3/
+.venv/
+.pytest_cache
+
+# JavaScript
+bundle.js
+*node_modules*
+files_for_autograder_io/
+*/var/*
+
+# Virtual Machines
+.vagrant/
+
+# Text editors and IDEs
+*~
+*.lock
+*.swp
+.vscode
+.ropeproject/
+.vscode/
+
+# macOS system files
+*.DS_Store
+
+# Google Drive and Dropbox
+Icon
+.dropbox*
+
+# Project specific
+static/js/app.js
+model
+package-lock.json

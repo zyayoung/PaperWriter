@@ -1,0 +1,40 @@
+/* This page uses this style. */
+
+body {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#editor {
+  width: 100%;
+  max-width: 640px;
+  height: 320px;
+}
+
+.textcomplete-dropdown {
+  border: 1px solid #ddd;
+  background-color: white;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.textcomplete-dropdown li {
+  margin: 0;
+}
+
+.textcomplete-footer,
+.textcomplete-item {
+  border-top: 1px solid #ddd;
+}
+
+.textcomplete-item {
+  padding: 3px 5px;
+  cursor: pointer;
+  min-height: 2ex;
+}
+
+.textcomplete-item:hover,
+.textcomplete-item.active {
+  background-color: rgb(110, 183, 219);
+}
