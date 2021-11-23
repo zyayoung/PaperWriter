@@ -7,7 +7,7 @@ const editor = new TextareaEditor(editorElement)
 
 const strategy = {
   id: "mention",
-  match: /(.+)$/,
+  match: /((.|\R)*)$/,
   index: 1,
   search: async (
     term,
@@ -35,7 +35,7 @@ const strategy = {
           }, 0);
       });
   },
-  cache: true,
+  cache: false,
   template: ({ token }) =>
     `<small>${token}</small>`,
   replace: ({ text }) => text
@@ -59,4 +59,11 @@ const option = {
 }
 
 const textcomplete = new Textcomplete(editor, [strategy], option)
-checkElement.onchange = (e) => { if (e.target.value) textcomplete.trigger(editorElement.value);; }
+checkElement.onchange = (e) => {
+  if (e.target.value) {
+    textcomplete.dropdown.hide();
+    textcomplete.trigger(editorElement.value);
+  }
+  editorElement.focus();
+  e.preventDefault();
+}

@@ -39,7 +39,7 @@ def next_api():
     if sequence in _cache.keys():
         return _cache[sequence]
 
-    inputs = tokenizer(sequence, return_tensors="pt")
+    inputs = tokenizer("\n" + sequence, return_tensors="pt")
     input_ids = inputs["input_ids"].tolist()[0]
     inputs = {k: v.to(device) for k, v in inputs.items()}
 
@@ -48,7 +48,7 @@ def next_api():
     next_token_logits[:, input_ids] -= 1
 
     # filter
-    logits, indices = next_token_logits.cpu().topk(10)
+    logits, indices = next_token_logits.cpu().topk(10, sorted=True)
 
     probs = logits.softmax(-1)
     keep = probs > 0.02
@@ -57,7 +57,7 @@ def next_api():
     tokens = [tokenizer.decode(t) for t in token_ids]
     _cache[sequence] = {
         "query": sequence,
-        "items": [(t, p) for t, p in zip(tokens, probs) if t.strip()]
+        "items": [(t, p) for t, p in zip(tokens, probs)]
     }
     return _cache[sequence]
 
