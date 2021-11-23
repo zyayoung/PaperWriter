@@ -44,9 +44,10 @@ const strategy = {
       data.forEach((e, i) => { if (v > 0 && (v -= e.prob) < 0) id = i });
       textcomplete.dropdown.activate(id)
       setTimeout(() => {
+        textcomplete.dropdown.hide()
         editorElement.value = term + data[id].token
         textcomplete.trigger(editorElement.value);
-      }, 0);
+      }, 100);
     }
   },
   cache: false,

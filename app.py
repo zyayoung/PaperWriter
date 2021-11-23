@@ -1,5 +1,5 @@
-import re
 import torch
+from threading import Thread, Lock
 
 from transformers.models.gpt2.modeling_gpt2 import GPT2LMHeadModel
 from transformers.models.gpt2.tokenization_gpt2_fast import GPT2TokenizerFast
@@ -9,29 +9,31 @@ from flask import Flask
 
 app = Flask(__name__)
 
-from flask_cors import CORS
-CORS(app)
-
 tokenizer: GPT2TokenizerFast = None
 model: GPT2LMHeadModel = None
-
+model_mutex = Lock()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 _cache = {}
 
 
+def init_model():
+    global tokenizer, model
+    with model_mutex:
+        if model is None:
+            tokenizer = AutoTokenizer.from_pretrained("zyayoung/cv-full-paper")
+            model = AutoModelForCausalLM.from_pretrained("zyayoung/cv-full-paper").to(device)
+            torch.set_grad_enabled(False)
+
+
 @app.route("/")
 def index():
+    Thread(target=init_model).start()
     return flask.send_file("index.html")
 
 
 @app.route("/next/")
 def next_api():
-    global tokenizer, model
-    if model is None:
-        torch.set_grad_enabled(False)
-        tokenizer = AutoTokenizer.from_pretrained("zyayoung/cv-full-paper")
-        model = AutoModelForCausalLM.from_pretrained("zyayoung/cv-full-paper").to(device)
-        torch.set_grad_enabled(False)
+    init_model()
 
     sequence = flask.request.args.get("q", "").strip()
     if not sequence:
@@ -41,14 +43,14 @@ def next_api():
 
     inputs = tokenizer("\n" + sequence, return_tensors="pt")
     input_ids = inputs["input_ids"].tolist()[0]
-    inputs = {k: v.to(device) for k, v in inputs.items()}
 
     # get logits of last hidden state
-    next_token_logits = model(**inputs).logits[:, -1, :]
-    next_token_logits[:, input_ids] -= 1
-
-    # filter
-    logits, indices = next_token_logits.cpu().topk(10, sorted=True)
+    with model_mutex:
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        next_token_logits = model(**inputs).logits[:, -1, :]
+        next_token_logits[:, input_ids] -= 1
+        logits, indices = next_token_logits.cpu().topk(10, sorted=True)
+        del next_token_logits
 
     probs = logits.softmax(-1)
     keep = probs > 0.02
