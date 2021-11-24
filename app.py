@@ -9,6 +9,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
+TEMP = 0.2
 tokenizer: GPT2TokenizerFast = None
 model: GPT2LMHeadModel = None
 model_mutex = Lock()
@@ -52,8 +53,8 @@ def next_api():
         logits, indices = next_token_logits.cpu().topk(10, sorted=True)
         del next_token_logits
 
-    probs = logits.softmax(-1)
-    keep = probs > 0.02
+    probs = logits.div(TEMP).softmax(-1)
+    keep = probs > 0.001
     probs = probs[keep].tolist()
     token_ids = indices[keep].tolist()
     tokens = [tokenizer.decode(t) for t in token_ids]

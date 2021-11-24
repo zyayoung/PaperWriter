@@ -1,5 +1,7 @@
 # YAPW: Yet Another (computer vision) Paper Writer
 
+![demo](static/demo.gif)
+
 ### Setup
 
 ```bash

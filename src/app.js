@@ -13,9 +13,8 @@ async function getSuggestions(term) {
     const sugg = data.items.map(e => ({
       token: e[0],
       prob: e[1],
-      text: term + e[0]
+      text: term.endsWith('\n') ? term + e[0].trim() : term + e[0]
     }));
-    _cache[term] = sugg;
     sugg.forEach((s) => {
       for (let i = 1; i < s.token.length; i++) {
         if (_cache[term + s.token.slice(0, i)] == null)
@@ -23,13 +22,17 @@ async function getSuggestions(term) {
         _cache[term + s.token.slice(0, i)].push({ token: s.token.slice(i), prob: 1, text: s.text })
       }
     })
+    sugg.forEach((s) => {
+        _cache[s.text] = null
+    })
+    _cache[term] = sugg;
   }
   return _cache[term]
 }
 
 const strategy = {
   id: "mention",
-  match: /((.|\R)*)$/,
+  match: /((.|\n|\r)*)$/,
   index: 1,
   search: async (
     term,
@@ -45,9 +48,9 @@ const strategy = {
       textcomplete.dropdown.activate(id)
       setTimeout(() => {
         textcomplete.dropdown.hide()
-        editorElement.value = term + data[id].token
+        editorElement.value = data[id].text
         textcomplete.trigger(editorElement.value);
-      }, 100);
+      }, 1);
     }
   },
   cache: false,
